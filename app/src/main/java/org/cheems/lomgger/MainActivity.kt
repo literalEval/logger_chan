@@ -22,7 +22,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val creds = getCreds(LocalContext.current)
+            val susServices = SusServices(LocalContext.current)
+            val creds = susServices.getCreds()
+
             val userTextState = remember {
                 mutableStateOf(
                     TextFieldValue(creds?.elementAt(0) ?: "")
@@ -46,7 +48,7 @@ class MainActivity : ComponentActivity() {
                                  IconButton(
                                      onClick = {
                                          GlobalScope.launch {
-                                             tryLogin()
+                                             susServices.tryLogin()
                                          }
                                      }
                                  ) {
@@ -74,7 +76,7 @@ class MainActivity : ComponentActivity() {
 
                         AmogusButton(
                             onClick = {
-                                saveCreds(
+                                susServices.saveCreds(
                                     context,
                                     userTextState.value.text,
                                     passTextState.value.text,
