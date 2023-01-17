@@ -1,15 +1,21 @@
 package org.cheems.lomgger
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +50,22 @@ fun SusPreviews () {
                 }
             )
         },
-        backgroundColor = MaterialTheme.colors.background
+        backgroundColor = MaterialTheme.colors.background,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                text = {
+                    IconButton(
+                        onClick = { }
+                    ) {
+                        Icon(Icons.Rounded.PlayArrow, "Login Button")
+                    }
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Rounded.Close, "Logout Button")
+                    }
+                },
+                onClick = { /*TODO*/ }
+            )
+        }
     ) {
         Column(
             modifier = Modifier

@@ -1,5 +1,6 @@
 package org.cheems.lomgger
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -15,14 +19,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.cheems.lomgger.ui.theme.LoggerChanTheme
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContent {
             val susServices = SusServices(LocalContext.current)
@@ -50,9 +55,7 @@ class MainActivity : ComponentActivity() {
                              actions = {
                                  IconButton(
                                      onClick = {
-                                         GlobalScope.launch {
-                                             susServices.tryLogin()
-                                         }
+                                         susServices.openRepo()
                                      }
                                  ) {
                                      Icon(
@@ -62,6 +65,36 @@ class MainActivity : ComponentActivity() {
                                  }
                              }
                          )
+                    },
+                    floatingActionButton = {
+                        ExtendedFloatingActionButton(
+                            text = {
+                                IconButton(
+                                    onClick = {
+                                        GlobalScope.launch {
+                                            susServices.tryLogin()
+                                        }
+                                    }
+                                ) {
+                                    Icon(Icons.Rounded.PlayArrow, "Login Button")
+                                }
+                                IconButton(
+                                    onClick = {
+                                        GlobalScope.launch {
+                                            susServices.tryLogout()
+                                        }
+                                    }
+                                ) {
+                                    Icon(Icons.Rounded.Close, "Logout Button")
+                                }
+                                IconButton(
+                                    onClick = {susServices.tryConnectWifi()}
+                                ) {
+                                    Icon(Icons.Rounded.Build, "Wifi Button")
+                                }
+                            },
+                            onClick = { /*TODO*/ }
+                        )
                     },
                     backgroundColor = MaterialTheme.colors.background
                 ) {

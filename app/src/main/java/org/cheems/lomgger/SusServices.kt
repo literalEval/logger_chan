@@ -1,9 +1,20 @@
 package org.cheems.lomgger
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.core.content.ContextCompat.startActivity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -11,15 +22,18 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-class SusServices(context: Context) {
+
+class SusServices(context: Context): Activity() {
 
     var usr: String? = null
     var pass: String? = null
     var authToken: String? = null
     var logginIn: Boolean = false
     var loggingOut: Boolean = false
+    var cachedContext: Context? = null
 
     init {
+        cachedContext = context
         loadCreds(context)
     }
 
@@ -50,12 +64,99 @@ class SusServices(context: Context) {
         return arrayOf<String?>(this.usr, this.pass, this.authToken)
     }
 
+    fun openRepo() {
+        if (cachedContext == null) {
+            return
+        }
+
+        val browserIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("http://github.com/literalEval/logger_chan")
+        )
+        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(cachedContext!!, browserIntent, null)
+    }
+
+    fun tryConnectWifi() {
+        // startForResult.launch(Intent(cachedContext, ActivityCompat::class.java))
+        if (tryToggleWifi() && tryConnectToNetwork()) {
+            GlobalScope.launch {
+                tryLogin()
+            }
+        }
+    }
+
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//    }
+
+//    val startForResult = registerForActivityResult(
+//        contract = ActivityResultContracts.StartActivityForResult(),
+//    ) { result: ActivityResult ->
+//        if (result.resultCode == Activity.RESULT_OK) {
+//            val intent = result.data
+//            println(intent)
+//        }
+//    }
+
+    override fun onResume() {
+        super.onResume()
+        println("resssssssssss")
+    }
+
+    private fun tryToggleWifi(): Boolean {
+        // TODO: Implement startActivityForResult properly
+
+        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+        if(!wifiManager.isWifiEnabled) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val wifiIntent = Intent(Settings.Panel.ACTION_WIFI)
+                startActivity(wifiIntent, null)
+                // startActivityForResult(wifiIntent, 1)
+            } else {
+                val wifiIntent = Intent(Settings.ACTION_WIFI_SETTINGS)
+                startActivity(wifiIntent, null)
+                // startActivityForResult(wifiIntent, 1)
+            }
+
+            return false
+        }
+
+        return true
+    }
+
+    fun buildWifiConfig(): WifiConfiguration {
+        val config = WifiConfiguration()
+        config.SSID = "\"IIT(BHU)\""
+        config.wepKeys[0] = "\"ravikota@84000\""
+        // have to set a very high number in order to ensure that
+        // Android doesn't immediately drop this connection and reconnect to
+        // the a different AP.
+        config.priority = 999999
+        return config
+    }
+
+    private fun tryConnectToNetwork(): Boolean {
+
+        return true
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        println("sdfsdf")
+        println(requestCode)
+        println(resultCode)
+        println(data)
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     suspend fun tryLogin() = withContext(Dispatchers.Default) {
         println("when the")
         val initUrl = URL("http://192.168.0.1/")
 
         val initConnection = initUrl.openConnection() as HttpURLConnection
-        var out: String = ""
+        var out = ""
 
         BufferedReader(InputStreamReader(initConnection.getInputStream())).use { inp ->
             while (inp.readLine().also { out += it } != null) {
@@ -66,10 +167,10 @@ class SusServices(context: Context) {
         initConnection.disconnect();
 
         val loginUrlRegex = Regex("(?<=.location=\")[^\"]+")
-        val token_regex = Regex("(?<=\\?)[^\"]+")
+        val tokenRegex = Regex("(?<=\\?)[^\"]+")
 
         val loginUrlFind = loginUrlRegex.find(out, 0) ?: return@withContext
-        val tokenFind = token_regex.find(out, 0) ?: return@withContext
+        val tokenFind = tokenRegex.find(out, 0) ?: return@withContext
 
         val loginUrlStr = loginUrlFind.value
         val tokenStr = tokenFind.value
