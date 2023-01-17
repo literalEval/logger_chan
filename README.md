@@ -1,6 +1,6 @@
 # logger_chan
 
-A lazy attempt to making a auto logger for Authorized WiFis
+A lazy attempt to making a auto logger for Authorized WiFis  
 Built using Intuition, Intellisense and StackOverflow
 
 ## Uses
