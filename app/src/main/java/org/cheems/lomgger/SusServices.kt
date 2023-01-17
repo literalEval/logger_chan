@@ -142,5 +142,6 @@ class SusServices(context: Context) {
         }
 
         logoutConnection.disconnect()
+        loggingOut = false
     }
 }

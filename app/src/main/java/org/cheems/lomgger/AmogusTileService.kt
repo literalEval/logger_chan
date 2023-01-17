@@ -4,8 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Build
+import android.os.IBinder
 import android.preference.PreferenceManager
+import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -19,17 +22,37 @@ class AmogusTileService : TileService() {
 
     lateinit var susServices: SusServices
 
+    override fun onBind(intent: Intent?): IBinder? {
+        println("amogus")
+        return super.onBind(intent)
+    }
+
     override fun onClick() {
         super.onClick()
 
         val sharedPreference = applicationContext.getSharedPreferences("SUS_PREF", Context.MODE_PRIVATE)
         susServices = SusServices(applicationContext)
-        GlobalScope.launch {
-            susServices.tryLogout()
+
+        if (qsTile.state == Tile.STATE_ACTIVE) {
+            GlobalScope.launch {
+                susServices.tryLogout()
+            }.also {
+                qsTile.label = "Login"
+                qsTile.state = Tile.STATE_INACTIVE
+                qsTile.updateTile()
+            }
         }
 
-        qsTile.label = "Logout"
-        qsTile.updateTile()
+        else {
+            GlobalScope.launch {
+                susServices.tryLogin()
+            }.also {
+                qsTile.label = "Logout"
+                qsTile.state = Tile.STATE_ACTIVE
+                qsTile.updateTile()
+            }
+        }
+
         println("amogus tile service")
     }
 
@@ -48,7 +71,7 @@ class AmogusTileService : TileService() {
         super.onStartListening()
 
         // Called when the Tile becomes visible
-        qsTile.label = "Logout"
+        qsTile.label = "visible"
         qsTile.updateTile()
         println("amogus tile service")
     }
