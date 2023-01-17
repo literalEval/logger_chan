@@ -7,9 +7,7 @@ import android.net.Uri
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.Bundle
 import android.provider.Settings
-import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.core.content.ContextCompat.startActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
