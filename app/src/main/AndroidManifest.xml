@@ -46,7 +46,7 @@
             android:name=".AmogusTileService"
             android:exported="true"
             android:icon="@drawable/flutter"
-            android:label="Login"
+            android:label="Logger Chan"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <meta-data
                 android:name="android.service.quicksettings.ACTIVE_TILE"

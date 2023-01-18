@@ -3,6 +3,7 @@ package org.cheems.lomgger
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.icu.util.TimeUnit
 import android.net.Uri
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.*
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -103,6 +105,54 @@ class SusServices(context: Context): Activity() {
         println("resssssssssss")
     }
 
+    fun login() {
+        try {
+            GlobalScope.launch {
+                // TODO: Make this work
+
+                // if(getLoginStatus()) {
+                //     println("already logged in")
+                //     return@launch
+                // }
+
+                println("trying to log out")
+                tryLogout()
+                println("trying to log in")
+                tryLogin()
+            }
+        } catch (e: Error) {
+            println(e)
+        }
+    }
+
+    private suspend fun getLoginStatus(): Boolean = withContext(Dispatchers.IO)  {
+
+        val keepaliveReqClient = OkHttpClient.Builder()
+            .retryOnConnectionFailure(true)
+            .protocols(listOf(Protocol.HTTP_1_1))
+            .readTimeout(40, java.util.concurrent.TimeUnit.SECONDS)
+            .connectTimeout(40, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+
+        val keepAliveRequest = Request.Builder()
+            .url("http://192.168.249.1:1000/keepalive?sussussussusbaka")
+            .header("Connection", "close")
+            .build()
+
+        keepaliveReqClient.newCall(keepAliveRequest).execute().use {
+            if (!it.isSuccessful) {
+                return@withContext false
+            }
+
+            for ((name, value) in it.headers) {
+                println("$name: $value")
+            }
+
+            println(it.body!!.string())
+            return@withContext true
+        }
+    }
+
     private fun tryToggleWifi(): Boolean {
         // TODO: Implement startActivityForResult properly
 
@@ -137,7 +187,6 @@ class SusServices(context: Context): Activity() {
     }
 
     private fun tryConnectToNetwork(): Boolean {
-
         return true
     }
 
@@ -149,14 +198,12 @@ class SusServices(context: Context): Activity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    suspend fun tryLogin() = withContext(Dispatchers.Default) {
-        println("when the")
+    suspend fun tryLogin() = withContext(Dispatchers.IO) {
         val initUrl = URL("http://192.168.0.1/")
-
         val initConnection = initUrl.openConnection() as HttpURLConnection
         var out = ""
 
-        BufferedReader(InputStreamReader(initConnection.getInputStream())).use { inp ->
+        BufferedReader(InputStreamReader(initConnection.inputStream)).use { inp ->
             while (inp.readLine().also { out += it } != null) {
                 println(out)
             }
@@ -180,7 +227,7 @@ class SusServices(context: Context): Activity() {
         val loginUrl = URL(loginUrlStr)
         val loginPageConnection = loginUrl.openConnection() as HttpURLConnection
 
-        BufferedReader(InputStreamReader(loginPageConnection.getInputStream())).use { inp ->
+        BufferedReader(InputStreamReader(loginPageConnection.inputStream)).use { inp ->
             while (inp.readLine().also { out += it } != null) {
                 // println(out)
             }
@@ -198,7 +245,7 @@ class SusServices(context: Context): Activity() {
         loginConnection.setRequestProperty("Content-length", postData.size.toString())
         loginConnection.setRequestProperty("Content-Type", "application/json")
 
-        BufferedWriter(OutputStreamWriter(loginConnection.getOutputStream())).use {
+        BufferedWriter(OutputStreamWriter(loginConnection.outputStream)).use {
             it.write(postData)
             it.flush()
         }
@@ -215,7 +262,7 @@ class SusServices(context: Context): Activity() {
 //    }
     }
 
-    suspend fun tryLogout() = withContext(Dispatchers.Default) {
+    suspend fun tryLogout() = withContext(Dispatchers.IO) {
 
         if (loggingOut) {
             return@withContext
@@ -230,7 +277,7 @@ class SusServices(context: Context): Activity() {
         var out: String = ""
 
         try {
-            BufferedReader(InputStreamReader(logoutConnection.getInputStream())).use { inp ->
+            BufferedReader(InputStreamReader(logoutConnection.inputStream)).use { inp ->
                 while (inp.readLine().also { out += it } != null) {
                      println("it")
                 }
@@ -242,5 +289,6 @@ class SusServices(context: Context): Activity() {
 
         logoutConnection.disconnect()
         loggingOut = false
+        println("logged out")
     }
 }

@@ -35,12 +35,12 @@ class MainActivity : ComponentActivity() {
 
             val userTextState = remember {
                 mutableStateOf(
-                    TextFieldValue(creds?.elementAt(0) ?: "")
+                    TextFieldValue(creds.elementAt(0) ?: "")
                 )
             }
             val passTextState = remember {
                 mutableStateOf(
-                    TextFieldValue(creds?.elementAt(1) ?: "")
+                    TextFieldValue(creds.elementAt(1) ?: "")
                 )
             }
 
@@ -71,8 +71,10 @@ class MainActivity : ComponentActivity() {
                             text = {
                                 IconButton(
                                     onClick = {
-                                        GlobalScope.launch {
-                                            susServices.tryLogin()
+                                        try {
+                                            susServices.login()
+                                        } catch (e: Error) {
+//                                            println(e)
                                         }
                                     }
                                 ) {
