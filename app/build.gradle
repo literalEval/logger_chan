@@ -7,6 +7,9 @@ android {
     namespace 'org.cheems.lomgger'
     compileSdk 33
 
+    lintOptions {
+        checkReleaseBuilds false
+    }
     defaultConfig {
         applicationId "org.cheems.lomgger"
         minSdk 21
