@@ -1,6 +1,7 @@
 package org.cheems.lomgger
 
 import android.app.Application
+import android.app.Dialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -11,9 +12,12 @@ import android.preference.PreferenceManager
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
+import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import kotlinx.coroutines.*
 
 @RequiresApi(Build.VERSION_CODES.N)
@@ -37,6 +41,7 @@ class AmogusTileService : TileService() {
             res.invokeOnCompletion {
                 qsTile.label = "Login"
                 qsTile.state = Tile.STATE_INACTIVE
+                qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.wifi_disconnected)
                 qsTile.updateTile()
             }
         }
@@ -49,6 +54,7 @@ class AmogusTileService : TileService() {
             res.invokeOnCompletion {
                 qsTile.label = "Logout"
                 qsTile.state = Tile.STATE_ACTIVE
+                qsTile.icon = Icon.createWithResource(applicationContext, R.drawable.wifi_connected)
                 qsTile.updateTile()
             }
         }
@@ -102,6 +108,8 @@ class AmogusTileService : TileService() {
         res.invokeOnCompletion {
             qsTile.label = if (res.isCancelled) "Login" else "Logout"
             qsTile.state = if (res.isCancelled) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
+            qsTile.icon = Icon.createWithResource(applicationContext,
+                if (res.isCancelled) R.drawable.wifi_disconnected else R.drawable.wifi_connected)
             qsTile.updateTile()
         }
     }
