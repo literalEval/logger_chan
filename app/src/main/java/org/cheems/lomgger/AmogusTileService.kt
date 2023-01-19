@@ -14,30 +14,27 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 @RequiresApi(Build.VERSION_CODES.N)
 class AmogusTileService : TileService() {
 
-    lateinit var susServices: SusServices
+    private lateinit var susServices: SusServices
 
     override fun onBind(intent: Intent?): IBinder? {
-        println("amogus")
+        println("amogus\n\n\namogus\n\n\namogus\n\n\namogus")
         return super.onBind(intent)
     }
 
     override fun onClick() {
         super.onClick()
 
-        val sharedPreference = applicationContext.getSharedPreferences("SUS_PREF", Context.MODE_PRIVATE)
-        susServices = SusServices()
-        susServices.loadCreds(applicationContext)
-
         if (qsTile.state == Tile.STATE_ACTIVE) {
-            GlobalScope.launch {
+            val res = GlobalScope.launch {
                 susServices.tryLogout()
-            }.also {
+            }
+
+            res.invokeOnCompletion {
                 qsTile.label = "Login"
                 qsTile.state = Tile.STATE_INACTIVE
                 qsTile.updateTile()
@@ -45,9 +42,11 @@ class AmogusTileService : TileService() {
         }
 
         else {
-            GlobalScope.launch {
+            val res = GlobalScope.launch {
                 susServices.tryLogin()
-            }.also {
+            }
+
+            res.invokeOnCompletion {
                 qsTile.label = "Logout"
                 qsTile.state = Tile.STATE_ACTIVE
                 qsTile.updateTile()
@@ -70,12 +69,16 @@ class AmogusTileService : TileService() {
     }
 
     override fun onStartListening() {
+        // Called when the Tile becomes
         super.onStartListening()
 
-        // Called when the Tile becomes visible
-        qsTile.label = "visible"
+        susServices = SusServices()
+        susServices.loadCreds(applicationContext)
+
+        qsTile.label = "Fetching"
+        qsTile.state = Tile.STATE_UNAVAILABLE
         qsTile.updateTile()
-        println("amogus tile service")
+        getLoginStatus()
     }
 
     override fun onStopListening() {
@@ -84,5 +87,43 @@ class AmogusTileService : TileService() {
         // Called when the tile is no longer visible
     }
 
+    fun getLoginStatus() {
+        val res = GlobalScope.async {
+            try {
+                return@async susServices.getLoginStatus()
+//                return@async true
+            } catch (e: Error) {
+                println(e)
+                return@async false
+            }
+        }
 
+        println(res)
+        res.invokeOnCompletion {
+            qsTile.label = if (res.isCancelled) "Login" else "Logout"
+            qsTile.state = if (res.isCancelled) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
+            qsTile.updateTile()
+        }
+    }
+
+    suspend fun tryLogin() {
+        val didLogin = withContext(Dispatchers.Default) {
+            tryLogout()
+            susServices.tryLogin()
+        }
+
+        qsTile.label = if (didLogin) "Logout" else "Error"
+        qsTile.state = if (didLogin) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+        qsTile.updateTile()
+    }
+
+    private suspend fun tryLogout() {
+        val didLogout = withContext(Dispatchers.Default) {
+            susServices.tryLogout()
+        }
+
+        qsTile.label = if (didLogout) "Login" else "Error"
+        qsTile.state = if (didLogout) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
+        qsTile.updateTile()
+    }
 }

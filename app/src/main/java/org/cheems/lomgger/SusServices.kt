@@ -89,7 +89,8 @@ class SusServices {
 
         keepaliveReqClient.newCall(keepAliveRequest).execute().use {
             if (!it.isSuccessful) {
-                return false
+                println("cant get keeplivesadlkfja;sdlkfj\n\n\n\n\nasdlkfjsaldfj\n\n\n\nldfkjsdf\n\n\n")
+                throw Exception("BTC exception")
             }
 
             for ((name, value) in it.headers) {
