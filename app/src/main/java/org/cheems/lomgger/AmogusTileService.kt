@@ -31,7 +31,8 @@ class AmogusTileService : TileService() {
         super.onClick()
 
         val sharedPreference = applicationContext.getSharedPreferences("SUS_PREF", Context.MODE_PRIVATE)
-        susServices = SusServices(applicationContext)
+        susServices = SusServices()
+        susServices.loadCreds(applicationContext)
 
         if (qsTile.state == Tile.STATE_ACTIVE) {
             GlobalScope.launch {
@@ -65,6 +66,7 @@ class AmogusTileService : TileService() {
         super.onTileAdded()
 
         // Do something when the user add the Tile
+        onStartListening()
     }
 
     override fun onStartListening() {
@@ -81,4 +83,6 @@ class AmogusTileService : TileService() {
 
         // Called when the tile is no longer visible
     }
+
+
 }

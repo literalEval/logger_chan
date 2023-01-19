@@ -2,9 +2,11 @@ package org.cheems.lomgger
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,15 +14,22 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.cheems.lomgger.ui.theme.LoggerChanTheme
 
@@ -29,9 +38,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+        val amogusViewModel = ViewModelProvider(this).get<AmogusViewModel>()
+
         setContent {
-            val susServices = SusServices(LocalContext.current)
-            val creds = susServices.getCreds()
+
+            amogusViewModel.init(LocalContext.current)
+            val creds = amogusViewModel.getCreds()
 
             val userTextState = remember {
                 mutableStateOf(
@@ -45,8 +57,24 @@ class MainActivity : ComponentActivity() {
             }
 
             LoggerChanTheme {
+
+                val scaffoldState = rememberScaffoldState()
+
+                LaunchedEffect(Unit) {
+                    amogusViewModel.isMessageShownFlow.collectLatest {
+                        println("amogus")
+//                        if (it) {
+                            scaffoldState.snackbarHostState.showSnackbar(
+                                message = it,
+                                duration = SnackbarDuration.Short
+                            )
+//                        }
+                    }
+                }
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    scaffoldState = scaffoldState,
                     topBar = {
                          TopAppBar (
                              title = {
@@ -55,7 +83,7 @@ class MainActivity : ComponentActivity() {
                              actions = {
                                  IconButton(
                                      onClick = {
-                                         susServices.openRepo()
+                                         amogusViewModel.openRepo()
                                      }
                                  ) {
                                      Icon(
@@ -71,10 +99,8 @@ class MainActivity : ComponentActivity() {
                             text = {
                                 IconButton(
                                     onClick = {
-                                        try {
-                                            susServices.login()
-                                        } catch (e: Error) {
-//                                            println(e)
+                                        GlobalScope.launch {
+                                            amogusViewModel.tryLogin()
                                         }
                                     }
                                 ) {
@@ -83,14 +109,16 @@ class MainActivity : ComponentActivity() {
                                 IconButton(
                                     onClick = {
                                         GlobalScope.launch {
-                                            susServices.tryLogout()
+                                            amogusViewModel.tryLogout()
                                         }
                                     }
                                 ) {
                                     Icon(Icons.Rounded.Close, "Logout Button")
                                 }
                                 IconButton(
-                                    onClick = {susServices.tryConnectWifi()}
+                                    onClick = {
+                                        amogusViewModel.tryConnectWifi()
+                                    }
                                 ) {
                                     Icon(Icons.Rounded.Build, "Wifi Button")
                                 }
@@ -100,6 +128,13 @@ class MainActivity : ComponentActivity() {
                     },
                     backgroundColor = MaterialTheme.colors.background
                 ) {
+                    if (amogusViewModel.shouldShowSnackBar) {
+                        Snackbar (
+                            modifier = Modifier.background(color = Color.Red)
+                                ) {
+                            Text("boi")
+                        }
+                    }
                     Column(
                         modifier = Modifier
                             .padding(16.dp)
@@ -107,7 +142,6 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.SpaceAround,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        val context = LocalContext.current
 
                         Image(
                             modifier = Modifier.padding(vertical = 4.dp),
@@ -120,11 +154,12 @@ class MainActivity : ComponentActivity() {
 
                         AmogusButton(
                             onClick = {
-                                susServices.saveCreds(
-                                    context,
-                                    userTextState.value.text,
-                                    passTextState.value.text,
-                                )
+//                                amogusViewModel.saveCreds(
+//                                    userTextState.value.text,
+//                                    passTextState.value.text,
+//                                )
+
+                                amogusViewModel.getLoginStatus()
                             }
                         )
                     }
