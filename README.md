@@ -14,5 +14,5 @@ and drag and drop the Logger Chan tile.
 
 ## Caveats (for now)
 
-- The tile (notification bar icon button) needs to be configured for the first login usage. For now it may show wrong auth state.
+- ~The tile (notification bar icon button) needs to be configured for the first login usage. For now it may show wrong auth state.~
 - When loggin in, mobile data should be off
