@@ -154,12 +154,12 @@ class MainActivity : ComponentActivity() {
 
                         AmogusButton(
                             onClick = {
-//                                amogusViewModel.saveCreds(
-//                                    userTextState.value.text,
-//                                    passTextState.value.text,
-//                                )
+                                amogusViewModel.saveCreds(
+                                    userTextState.value.text,
+                                    passTextState.value.text,
+                                )
 
-                                amogusViewModel.getLoginStatus()
+//                                amogusViewModel.getLoginStatus()
                             }
                         )
                     }
