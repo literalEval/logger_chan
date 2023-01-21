@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Bundle
 import android.provider.Settings
 import androidx.core.content.ContextCompat.startActivity
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ class SusServices {
     private var authToken: String? = null
     private var logginIn: Boolean = false
     private var loggingOut: Boolean = false
+    var isSetup: Boolean = false
 
     fun saveCreds(context: Context, usr: String, pass: String): Boolean {
         this.usr = usr
@@ -48,6 +50,8 @@ class SusServices {
         this.usr = sharedPreference.getString("usr", null)
         this.pass = sharedPreference.getString("pass", null)
 
+        isSetup = usr != null && usr!!.isNotEmpty() && pass != null && pass!!.isNotEmpty()
+        println("Is Setup ? $isSetup")
         return arrayOf(usr, pass)
     }
 
@@ -65,6 +69,9 @@ class SusServices {
     }
 
     fun tryConnectWifi(context: Context) {
+//        tryToggleWifi(context)
+//        return
+
         if (tryToggleWifi(context) && tryConnectToNetwork()) {
             GlobalScope.launch {
                 tryLogout()
@@ -104,6 +111,10 @@ class SusServices {
 
     private fun tryToggleWifi(context: Context): Boolean {
         // TODO: Implement startActivityForResult properly
+
+//        val intent = Intent(context, SusActivity::class.java)
+//        startActivity(context, intent, null)
+//        return true
 
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 

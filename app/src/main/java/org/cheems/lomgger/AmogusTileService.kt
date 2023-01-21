@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.drawable.Icon
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
 import android.preference.PreferenceManager
@@ -26,7 +27,7 @@ class AmogusTileService : TileService() {
     private lateinit var susServices: SusServices
 
     override fun onBind(intent: Intent?): IBinder? {
-        println("amogus\n\n\namogus\n\n\namogus\n\n\namogus")
+        println("amogus\n\n\namogus tile bind\n\n\namogus tile bind\n\n\namogus tile bind")
         return super.onBind(intent)
     }
 
@@ -46,7 +47,7 @@ class AmogusTileService : TileService() {
             }
         }
 
-        else {
+        else if (qsTile.state == Tile.STATE_INACTIVE) {
             val res = GlobalScope.launch {
                 susServices.tryLogin()
             }
@@ -81,10 +82,18 @@ class AmogusTileService : TileService() {
         susServices = SusServices()
         susServices.loadCreds(applicationContext)
 
-        qsTile.label = "Fetching"
         qsTile.state = Tile.STATE_UNAVAILABLE
+
+        if (!susServices.isSetup) {
+            qsTile.label = "Setup"
+        } else if (!getWifiStatus()) {
+            qsTile.label = "WiFi Off"
+        } else {
+            qsTile.label = "Checking"
+            getLoginStatus()
+        }
+
         qsTile.updateTile()
-        getLoginStatus()
     }
 
     override fun onStopListening() {
@@ -93,11 +102,15 @@ class AmogusTileService : TileService() {
         // Called when the tile is no longer visible
     }
 
-    fun getLoginStatus() {
+    private fun getWifiStatus(): Boolean {
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        return wifiManager.isWifiEnabled
+    }
+
+    private fun getLoginStatus() {
         val res = GlobalScope.async {
             try {
                 return@async susServices.getLoginStatus()
-//                return@async true
             } catch (e: Error) {
                 println(e)
                 return@async false

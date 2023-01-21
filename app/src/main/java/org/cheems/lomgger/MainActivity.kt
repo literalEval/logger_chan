@@ -2,7 +2,6 @@ package org.cheems.lomgger
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -17,7 +16,6 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.cheems.lomgger.ui.theme.LoggerChanTheme
@@ -158,8 +155,12 @@ class MainActivity : ComponentActivity() {
                                     userTextState.value.text,
                                     passTextState.value.text,
                                 )
+                            }
+                        )
 
-//                                amogusViewModel.getLoginStatus()
+                        AmogusButton(
+                            onClick = {
+                                amogusViewModel.tryConnectWifi()
                             }
                         )
                     }

@@ -33,4 +33,6 @@
     <string name="image_view_item_transform_content_description">Represents an image view in the
         item
     </string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
